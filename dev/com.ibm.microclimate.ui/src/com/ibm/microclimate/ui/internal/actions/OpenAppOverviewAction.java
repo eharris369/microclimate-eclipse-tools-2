@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 IBM Corporation and others.
+ * Copyright (c) 2018, 2019 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * which accompanies this distribution, and is available at
@@ -18,7 +18,9 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IObjectActionDelegate;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.browser.IWebBrowser;
@@ -27,6 +29,8 @@ import org.eclipse.ui.browser.IWorkbenchBrowserSupport;
 import com.ibm.microclimate.core.internal.MCLogger;
 import com.ibm.microclimate.core.internal.MicroclimateApplication;
 import com.ibm.microclimate.core.internal.constants.MCConstants;
+import com.ibm.microclimate.ui.MicroclimateUIPlugin;
+import com.ibm.microclimate.ui.internal.editors.MCApplicationEditorInput;
 import com.ibm.microclimate.ui.internal.messages.Messages;
 
 /**
@@ -62,26 +66,15 @@ public class OpenAppOverviewAction implements IObjectActionDelegate {
         	MCLogger.logError("OpenAppOverviewAction ran but no Microclimate application was selected");
 			return;
 		}
-
-        URL url = app.mcConnection.getAppOverviewURL(app);
-        if (url == null) {
-        	// this should not happen
-        	MCLogger.logError("OpenAppOverviewAction ran but the url was null");
-			return;
-        }
-
-        // Use the app's ID as the browser ID so that if this is called again on the same app,
-        // the browser will be re-used
-
+        
+        IWorkbenchWindow workbenchWindow = MicroclimateUIPlugin.getDefault().getWorkbench().getActiveWorkbenchWindow();
+		IWorkbenchPage page = workbenchWindow.getActivePage();
+		
 		try {
-			IWorkbenchBrowserSupport browserSupport = PlatformUI.getWorkbench().getBrowserSupport();
-			IWebBrowser browser = browserSupport
-					.createBrowser(IWorkbenchBrowserSupport.NAVIGATION_BAR | IWorkbenchBrowserSupport.LOCATION_BAR,
-							app.projectID + "_" + MCConstants.VIEW_OVERVIEW, app.name, NLS.bind(Messages.BrowserTooltipAppOverview, app.name));
-
-	        browser.openURL(url);
-		} catch (PartInitException e) {
-			MCLogger.logError("Error opening the app overview in browser", e); //$NON-NLS-1$
+			MCApplicationEditorInput input = new MCApplicationEditorInput(app);
+			page.openEditor(input, MCApplicationEditorInput.EDITOR_ID);
+		} catch (Exception e) {
+			MCLogger.logError("An error occurred opening the editor for application: " + app.name, e);
 		}
     }
 

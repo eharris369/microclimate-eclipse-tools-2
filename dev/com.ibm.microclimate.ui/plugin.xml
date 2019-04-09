@@ -260,5 +260,12 @@
 			markerType="com.ibm.microclimate.core.validationMarker"
 			class="com.ibm.microclimate.ui.internal.marker.MicroclimateMarkerResolutionGenerator"/>
 	</extension>
+	
+	<extension point="org.eclipse.ui.editors">
+	    <editor id="com.ibm.microclimate.ui.editors.appOverview"
+	        name="Application Overview"
+	        icon="icons/microclimate.ico"
+	        class="com.ibm.microclimate.ui.internal.editors.MCApplicationEditorPart"/>
+	</extension>
 
 </plugin>
